@@ -1,4 +1,4 @@
-# CCTP
+# CCTP - Ammar Amjad and Jarrar Amjad
 CCTP - cryptocurrency trading platform
 
 - performs sentiment analysis from google news to find out the latest news about a cryptocurrency
