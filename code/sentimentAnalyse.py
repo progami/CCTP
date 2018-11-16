@@ -58,7 +58,8 @@ class SentimentAnalyse:
     def __get_rss_v2(self):
         self.gNews.query = self.name + ' Cryptocurrency'
         data = self.gNews.get_news()
-
+        if not data:
+            raise
         for article in data:
             self.article_list.append(article['title'])
 
