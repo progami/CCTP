@@ -581,7 +581,3 @@ try:
     CCTP()
 except Exception as bigE:
     logging.exception('program crashed {}'.format(bigE))
-
-# api_key = 'ETT91dKTKwaC0LyWLl5F2zR2iW8NC8e6R0oLwayY3poRyC7rmN4LBxUE29RTg6xz'
-# secret_key = '04J6CvryREZ09BGUQmbqkj1iyzdPBI1XNvWqYdImthqeqFoxC9LrFneycLyS1JTP '
-# email = jarraramjad@gmail.com
