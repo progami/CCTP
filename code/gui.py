@@ -39,6 +39,11 @@ frontend.connect('tcp://localhost:17000')
 flag = 0
 # inputs from GUI
 input_params_dict = dict()
+if os.path.exists(os.path.join('logs', 'default.json')):
+    with open(os.path.join('logs', 'default.json'), 'r') as f:
+        input_params_dict = json.load(f)
+else:
+    input_params_dict = dict()
 investment_dict = dict()
 Coins_ = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'BCCUSDT', 'NEOUSDT', 'LTCUSDT', 'QTUMUSDT', 'ADAUSDT', 'XRPUSDT', 'EOSUSDT',
           'TUSDUSDT', 'IOTAUSDT', 'XLMUSDT', 'ONTUSDT', 'TRXUSDT', 'ETCUSDT', 'ICXUSDT', 'NULSUSDT', 'VETUSDT',
@@ -498,7 +503,7 @@ def clear_page_1_coins_investment(submit_time=None, reset_time=None, coin=None, 
                State('Private-Key', 'value'),
                State('Email', 'value'),
                State('radio','value'),
-               State('take-profit','value')
+               State('take-profit', 'value')
                ])
 def page_1_inputs(save_count=None, time_frame_1=None, time_frame_2=None,
                   time_frame_3=None, sma_fast_len=None, sma_slow_len=None,
@@ -524,6 +529,9 @@ def page_1_inputs(save_count=None, time_frame_1=None, time_frame_2=None,
                         input_params_dict['sma_slow_len'] = int(sma_slow_len)
                         input_params_dict['variable_quote'] = variable_quote_count
                         input_params_dict['symbol_count'] = int(symbol_count.split('-')[1])
+                        with open(os.path.join('logs', 'default.json'), 'w') as f:
+                            json.dump(input_params_dict, f)
+
                         frontend.send_pyobj(input_params_dict)
                         # Coins_ = \
                         if frontend.recv_pyobj() == 1:

@@ -2,4 +2,8 @@
 /logs
 /__pycache__
 /.idea
+<<<<<<< HEAD
 /code/__pycache__/
+=======
+/code/__pycache__
+>>>>>>> 9f216d72fe668eb6ba34180089fbff59a1e32620
