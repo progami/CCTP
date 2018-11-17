@@ -2,7 +2,6 @@ import smtplib
 import pandas as pd
 import time
 import logging
-import os
 from datetime import datetime
 import decimal
 import zmq
@@ -184,7 +183,10 @@ class Coin:
 
             for idx, (interval, data_frame) in enumerate(zip(self.interval_list, self.data)):
                 # acquire latest candle from binance api, append it is a row at the end of self.data
-                latest_candle = self.client.get_klines(symbol=self.symbolPair, interval=interval, limit=1)
+                try:
+                    latest_candle = self.client.get_klines(symbol=self.symbolPair, interval=interval, limit=1)
+                except:
+                    pass
                 latest_time = self.__binance_time_to_pandas_time(latest_candle[0][0])
                 latest_price = latest_candle[0][4]
                 latest_row = pd.Series(data=[latest_time, latest_price, 0, 0], index=data_frame.columns)
@@ -201,7 +203,7 @@ class Coin:
                     # data_frame.plot(x='Time', y=['sma_fast', 'sma_slow'])
                     # plt.show()
 
-            if self.investment and self.in_trade == False:
+            if self.investment and self.in_trade is False:
                 self._get_sma_market_position()
                 self.sentiment = self.sentiment_analyse.get_sentiment()
                 self.sentiment_list.append(self.sentiment)
@@ -223,7 +225,7 @@ class Coin:
                 logging.info('entry price at trade: {}'.format(self.entry_price))
                 logging.info('req to sell: {}'.format(self.exit_price))
 
-                if self.price >= round(self.exit_price):
+                if self.price >= round(self.exit_price, 6):
                     print('placing sell order at market')
                     logging.critical('placing sell order at market for {}'.format(self.symbolPair))
                     logging.critical('base currency balance: {}'.format(self.base_currency_balance))
@@ -245,7 +247,7 @@ class Coin:
                                   self.symbolPair,
                                   self.entry_price,
                                   self.exit_price,
-                                  round(self.exit_price - self.entry_price, self.round_factor)))
+                                  round(self.exit_price - self.entry_price, 6)))
                             self.__send_email_notification()
 
                             self.entry_price = 0
@@ -304,8 +306,8 @@ class Coin:
                     self.client.order_market_buy(symbol=self.symbolPair, quantity=self.quantity)
                     self.in_trade = True
                     self.entry_price = self.price
-                    self.exit_price = round(self.entry_price + (self.entry_price * self.take_profit), abs(self.round_factor))
-                    print(Back.WHITE + Fore.RED + "{} - placed buy order at market\nentry price: {}\nexit target: {}\ntake profit %: {}".format(self.local_time, self.entry_price, self.exit_price, self.take_profit*100))
+                    self.exit_price = round(self.entry_price + (self.entry_price * self.take_profit), 6)
+                    print(Back.WHITE + Fore.RED + '{} - placed buy order at market\nentry price: {}\nexit target: {}\ntake profit %: {}'.format(self.local_time, self.entry_price, self.exit_price, self.take_profit * 100))
                     self.__send_email_notification()
                     logging.critical('placing buy order at market for {}'.format(self.symbolPair))
 
@@ -325,6 +327,7 @@ class Coin:
 
     def __calculate_qty(self):
         self.quantity = round(self.investment / self.price, self.round_factor)
+        logging.critical('quantity calculated: {}'.format(self.quantity))
 
     def __send_email_notification(self, special_message=''):
         try:
@@ -349,6 +352,7 @@ class Coin:
             logging.critical('email sent')
         except Exception as e:
             logging.critical('{}'.format(e))
+
 
 class CCTP:
 
@@ -571,6 +575,7 @@ class CCTP:
                                            'min_investment': min_investment, 'min_qty': min_qty, 'min_step': min_step,
                                            'base_asset_balance': base_asset_balance,
                                            'quote_asset_balance': quote_asset_balance}
+
 
 try:
     CCTP()
