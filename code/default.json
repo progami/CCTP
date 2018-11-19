@@ -1,0 +1,16 @@
+{
+    "mode": 1,
+    "email": "jarraramjad@gmail.com",
+    "public": "ETT91dKTKwaC0LyWLl5F2zR2iW8NC8e6R0oLwayY3poRyC7rmN4LBxUE29RTg6xz",
+    "private": "04J6CvryREZ09BGUQmbqkj1iyzdPBI1XNvWqYdImthqeqFoxC9LrFneycLyS1JTP",
+    "take_profit": 10.0,
+    "interval_list": [
+        "1m",
+        "5m",
+        "4h"
+    ],
+    "sma_fast_len": 20,
+    "sma_slow_len": 50,
+    "variable_quote": "BNB",
+    "symbol_count": 10
+}

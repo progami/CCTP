@@ -1,13 +1,12 @@
 import os
 import json
-from datetime import datetime
+from pprint import pprint
 import zmq
 import dash
 import dash_core_components as dcc
 import dash_html_components as html
 from dash.dependencies import Input, State, Output
 import pandas as pd
-import pprint
 import time
 
 print(dcc.__version__)  # 0.6.0 or above is required
@@ -21,7 +20,6 @@ app.css.append_css({'external_url': 'https://cdn.rawgit.com/plotly/dash-app-styl
 # app.css.append_css({
 #     'external_url': 'https://codepen.io/chriddyp/pen/bWLwgP.css'
 # })
-
 
 context = zmq.Context()
 frontend = context.socket(zmq.REQ)
@@ -39,11 +37,14 @@ frontend.connect('tcp://localhost:17000')
 flag = 0
 # inputs from GUI
 input_params_dict = dict()
-if os.path.exists(os.path.join('logs', 'default.json')):
-    with open(os.path.join('logs', 'default.json'), 'r') as f:
+if os.path.exists('default.json'):
+    with open('default.json', 'r') as f:
         input_params_dict = json.load(f)
+    with open('default.json', 'w') as f:
+        json.dump(input_params_dict, f, indent=4)
 else:
     input_params_dict = dict()
+
 investment_dict = dict()
 Coins_ = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'BCCUSDT', 'NEOUSDT', 'LTCUSDT', 'QTUMUSDT', 'ADAUSDT', 'XRPUSDT', 'EOSUSDT',
           'TUSDUSDT', 'IOTAUSDT', 'XLMUSDT', 'ONTUSDT', 'TRXUSDT', 'ETCUSDT', 'ICXUSDT', 'NULSUSDT', 'VETUSDT',
@@ -266,13 +267,13 @@ def display_page(pathname):
 
 
                 html.Div([html.Label('Trading Space Mode')]),
-                html.Div([dcc.RadioItems(id = 'radio',
+                html.Div([dcc.RadioItems(id='radio',
                     options=[
                         {'label': 'Fully Automatic', 'value': 1},
                         {'label': 'Semi Automatic', 'value': 0}
                     ],className='two columns',
-                    value=''
-                )],className='row'),
+                    value=input_params_dict['mode']
+                )], className='row'),
 
                 html.Div([
 
@@ -295,11 +296,11 @@ def display_page(pathname):
 
                 html.Div([
                     html.Div([
-                        dcc.Input(id='Email', value='', type='text', className="two columns"),
+                        dcc.Input(id='Email', value=input_params_dict['email'], type='text', className="two columns"),
                         html.H3(className='two columns'),
-                        dcc.Input(id='Public-Key', value='', type='text', className="two columns"),
+                        dcc.Input(id='Public-Key', value=input_params_dict['public'], type='text', className="two columns"),
                         html.H3(className='two columns'),
-                        dcc.Input(id='Private-Key', value='', type='text', className="two columns"),
+                        dcc.Input(id='Private-Key', value=input_params_dict['private'], type='text', className="two columns"),
                     ],
                         className='ten columns offset-by-two'
                     )
@@ -317,7 +318,7 @@ def display_page(pathname):
                 html.Div([html.H3(className="one column"),
 
                           dcc.Dropdown(id='time-frame-1',
-
+                                       value=input_params_dict['interval_list'][0],
                                        options=[
                                            {'label': c, 'value': c} for c in Time_Frame
 
@@ -327,7 +328,7 @@ def display_page(pathname):
 
                           html.H3(className="one column"),
                           dcc.Dropdown(id='time-frame-2',
-
+                                       value=input_params_dict['interval_list'][1],
                                        options=[
                                            {'label': c, 'value': c} for c in Time_Frame
 
@@ -337,7 +338,7 @@ def display_page(pathname):
 
                           html.H3(className="one column"),
                           dcc.Dropdown(id='time-frame-3',
-
+                                       value=input_params_dict['interval_list'][2],
                                        options=[
                                            {'label': c, 'value': c} for c in Time_Frame
 
@@ -361,11 +362,11 @@ def display_page(pathname):
 
                 html.Div([
                     html.Div([
-                        dcc.Input(id='SMA-Fast', value='', type='text', className="two columns"),
+                        dcc.Input(id='SMA-Fast', value=input_params_dict['sma_fast_len'], type='text', className="two columns"),
                         html.H3(className='two columns'),
-                        dcc.Input(id='SMA-Slow', value='', type='text', className="two columns"),
+                        dcc.Input(id='SMA-Slow', value=input_params_dict['sma_slow_len'], type='text', className="two columns"),
                         html.H3(className='two columns'),
-                        dcc.Input(id='take-profit', value='', type='text', className="two columns"),
+                        dcc.Input(id='take-profit', value=input_params_dict['take_profit'], type='text', className="two columns"),
                     ],
                         className='ten columns offset-by-two'
                     )
@@ -379,6 +380,7 @@ def display_page(pathname):
                 html.Div([html.H3(className="two columns"),
 
                           dcc.Dropdown(id='Variable-Quote-Count',
+                                       value=input_params_dict['variable_quote'],
                                        options=[
                                            {'label': c, 'value': c} for c in ['BNB', 'BTC', 'ETH']
                                        ], className='eight columns'
@@ -393,6 +395,7 @@ def display_page(pathname):
                 html.Div([html.H3(className="two columns"),
 
                           dcc.Dropdown(id='Coin-Count',
+                                       value='Top-10',
                                        options=[
                                            {'label': c, 'value': c} for c in Coin_No
                                        ], className='eight columns'
@@ -415,7 +418,7 @@ def display_page(pathname):
 
                 html.Br(),
 
-                html.Div([dcc.Link('Investments Page', href='/page-1'),
+                html.Div([dcc.Link('Proceed to Investments Page', href='/page-1'),
                           ], className='row', style={'text-align': 'center'})
 
             ])
