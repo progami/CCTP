@@ -418,7 +418,7 @@ def display_page(pathname):
 
                 html.Br(),
 
-                html.Div([dcc.Link('Proceed to Investments Page', href='/page-1'),
+                html.Div([dcc.Link('Investments Page', href='/page-1'),
                           ], className='row', style={'text-align': 'center'})
 
             ])
