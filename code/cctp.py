@@ -180,13 +180,14 @@ class Coin:
                          + '\nbase currency: ' + str(self.base_currency_symbol) + '- base currency balance: ' + str(self.base_currency_balance)
                          + '\nquote currency: ' + str(self.quote_currency_symbol) + '- quote currency balance: ' + str(self.quote_currency_balance))
 
-
             for idx, (interval, data_frame) in enumerate(zip(self.interval_list, self.data)):
                 # acquire latest candle from binance api, append it is a row at the end of self.data
                 try:
                     latest_candle = self.client.get_klines(symbol=self.symbolPair, interval=interval, limit=1)
                 except:
-                    pass
+                    print("Binance rate limit reached for the day.")
+                    logging.critical('binance rate limit reached most probably')
+                    return
                 latest_time = self.__binance_time_to_pandas_time(latest_candle[0][0])
                 latest_price = latest_candle[0][4]
                 latest_row = pd.Series(data=[latest_time, latest_price, 0, 0], index=data_frame.columns)
@@ -199,9 +200,6 @@ class Coin:
                     # recalculate sma for latest candle
                     self._init_sma()
 
-                    # plot to check the values of sma
-                    # data_frame.plot(x='Time', y=['sma_fast', 'sma_slow'])
-                    # plt.show()
 
             if self.investment and self.in_trade is False:
                 self._get_sma_market_position()
