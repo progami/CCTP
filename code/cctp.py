@@ -162,17 +162,10 @@ class Coin:
                 self.base_currency_balance = float(self.client.get_asset_balance(asset=self.base_currency_symbol)['free'])
                 self.quote_currency_balance = float(self.client.get_asset_balance(asset=self.quote_currency_symbol)['free'])
             except:
+                logging.critical('binance rate limit reached - could not retrieve quote, base, and current price balances')
+                print('binance rate limit reached')
                 self.base_currency_balance = 0.0
                 self.quote_currency_balance = 0.0
-
-            self.gui_dict['general'] = "Monitoring" \
-                                       + '\nSymbol name: ' + str(self.symbolPair) \
-                                       + '\ncurrent price: ' + str(self.price) \
-                                       + '\ncurrent budget allocation: ' + str(self.investment) \
-                                       + '\nbase currency: ' + str(self.base_currency_symbol) \
-                                       + '\nbase currency balance: ' + str(self.base_currency_balance) \
-                                       + '\nquote currency: ' + str(self.quote_currency_symbol) \
-                                       + '\nquote currency balance: ' + str(self.quote_currency_balance)
 
             logging.info('\nSymbol name: ' + str(self.symbolPair)
                          + '\ncurrent price: ' + str(self.price)
@@ -186,7 +179,7 @@ class Coin:
                     latest_candle = self.client.get_klines(symbol=self.symbolPair, interval=interval, limit=1)
                 except:
                     print("Binance rate limit reached for the day.")
-                    logging.critical('binance rate limit reached most probably')
+                    logging.critical('binance rate limit reached most probably - could not retrieve latest candle')
                     return
                 latest_time = self.__binance_time_to_pandas_time(latest_candle[0][0])
                 latest_price = latest_candle[0][4]
@@ -295,7 +288,6 @@ class Coin:
         # checks the sma_market_position and if it is positive or negative - places a market order for buy/sell
         # resets the market position intended at the end of the cycle
         if self.sma_market_position == 1 and self.sentiment > 0.15:
-
 
             self.__calculate_qty()
             # consume all of the investment in 1 market order
