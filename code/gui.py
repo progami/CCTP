@@ -45,6 +45,7 @@ if os.path.exists('default.json'):
 else:
     input_params_dict = dict()
 
+print(input_params_dict['mode'])
 investment_dict = dict()
 Coins_ = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'BCCUSDT', 'NEOUSDT', 'LTCUSDT', 'QTUMUSDT', 'ADAUSDT', 'XRPUSDT', 'EOSUSDT',
           'TUSDUSDT', 'IOTAUSDT', 'XLMUSDT', 'ONTUSDT', 'TRXUSDT', 'ETCUSDT', 'ICXUSDT', 'NULSUSDT', 'VETUSDT',
@@ -84,94 +85,6 @@ def display_page(pathname):
     global pd_df
 
     if pathname:
-
-        # if pathname == '/page-2':
-
-
-            # return html.Div([
-            #
-            #     html.Div(id='fake_2',
-            #              style={'display': 'none'}
-            #              ),
-            #
-            #     html.Div([html.H2('Investment Supervision Page'),
-            #               ], style={'text-align': 'center'}, className='row'),
-            #
-            #     html.Br(),
-            #
-            #     html.Div([html.Div([
-            #
-            #         dcc.Graph(id='my-graph'),
-            #     ], className='six columns'),
-            #         html.Div([
-            #
-            #             dcc.Dropdown(
-            #                 id='my-dropdown',
-            #                 options=[
-            #                     {'label': symbol, 'value': symbol} for symbol in pd_df.index.values
-            #
-            #                 ],
-            #                 value='Coins'
-            #             ),
-            #
-            #         ], className='six columns')
-            #     ], className='row'
-            #     ),
-            #
-            #     # html.Div([
-            #     #     html.Div(id='output-b',className='six columns'),
-            #     #     html.Div(id='output-d',className='six columns'),
-            #     # ],className='row'),
-            #
-            #     html.Div([
-            #         html.Div(html.H3('Info of Selected Coin ',className='six columns')),
-            #         html.Div(html.H3('Market Buy/Sell Orders of All Coins ',className='six columns'))
-            #
-            #     ], className='row'),
-            #
-            #     html.Div([
-            #         html.Div([
-            #             dcc.Textarea(
-            #                 id='text_area',
-            #                 readOnly=True,
-            #                 placeholder='',
-            #                 value='',
-            #                 style={'font-size': '20px', 'height': 500, 'width': '100%'},
-            #
-            #             )
-            #         ], className='six columns'),
-            #
-            #         html.Div([
-            #             dcc.Textarea(
-            #                 id='text_area_2',
-            #                 readOnly=True,
-            #                 placeholder='',
-            #                 value='',
-            #                 style={'font-size': '20px', 'height': 500, 'width': '100%'},
-            #
-            #             )
-            #         ], className='six columns'),
-            #     ], className='row'),
-            #
-            #
-            #     dcc.Interval(
-            #         id='interval-component',
-            #         interval=1 * 4000,  # in milliseconds
-            #         n_intervals=0
-            #     ),
-            #     dcc.Interval(
-            #         id='interval-component_2',
-            #         interval=1 * 4100,  # in milliseconds
-            #         n_intervals=0
-            #     ),
-            #     html.Div(id='page-2-content'),
-            #
-            #     html.Br(),
-            #
-            #     html.Div([dcc.Link('Investments Page', href='/page-1'),
-            #               ], className='row', style={'text-align': 'center'})
-            #
-            # ])
 
         if pathname == '/page-1':
 
@@ -266,12 +179,13 @@ def display_page(pathname):
                           ], className="row"),
 
 
-                html.Div([html.Label('Trading Space Mode')]),
+                html.Div([html.Label('Trading Mode')]),
                 html.Div([dcc.RadioItems(id='radio',
                     options=[
                         {'label': 'Fully Automatic', 'value': 1},
                         {'label': 'Semi Automatic', 'value': 0}
-                    ],className='two columns',
+                    ],
+                    className='two columns',
                     value=input_params_dict['mode']
                 )], className='row'),
 
