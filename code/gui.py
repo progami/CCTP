@@ -37,20 +37,26 @@ frontend.connect('tcp://localhost:17000')
 flag = 0
 # inputs from GUI
 input_params_dict = dict()
-if os.path.exists('default.json'):
+if os.path.isfile('default.json'):
     with open(os.path.join(os.getcwd(), 'default.json'), 'r') as f:
         input_params_dict = json.load(f)
+else:
+    input_params_dict['mode'] = int()
+    input_params_dict['email'] = str()
+    input_params_dict['public'] = str()
+    input_params_dict['private'] = str()
+    input_params_dict['take_profit'] = float()
+    input_params_dict['interval_list'] = [str(), str(), str()]
+    input_params_dict['sma_fast_len'] = int()
+    input_params_dict['sma_slow_len'] = int()
+    input_params_dict['variable_quote'] = str()
+    input_params_dict['symbol_count'] = str()
+
     with open(os.path.join(os.getcwd(), 'default.json'), 'w') as f:
         json.dump(input_params_dict, f, indent=4)
-else:
-    input_params_dict = dict()
 
-print(input_params_dict['mode'])
 investment_dict = dict()
-Coins_ = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'BCCUSDT', 'NEOUSDT', 'LTCUSDT', 'QTUMUSDT', 'ADAUSDT', 'XRPUSDT', 'EOSUSDT',
-          'TUSDUSDT', 'IOTAUSDT', 'XLMUSDT', 'ONTUSDT', 'TRXUSDT', 'ETCUSDT', 'ICXUSDT', 'NULSUSDT', 'VETUSDT',
-          'PAXUSDT', 'RVNBNB', 'XRPBNB', 'TRXBNB', 'BATBNB', 'PAXBNB', 'XZCBNB', 'XLMBNB', 'LTCBNB', 'EOSBNB',
-          'LOOMBNB', 'TUSDBTC', 'TUSDETH', 'TUSDBNB']
+Coins_ = []
 Coin_No = ['Top-10', 'Top-25', 'Top-50']
 Time_Frame = ['1m', '3m', '5m', '15m', '30m', '1h', '2h', '4h', '6h', '8h', '12h', '1d', '3d', '1w', '1M']
 binance_status_flag = True
@@ -91,9 +97,11 @@ def display_page(pathname):
             if binance_status_flag:
                 frontend.send_pyobj('')
                 pd_df = frontend.recv_pyobj()
-
-                pd_df = pd.read_csv('default_investments.csv')
-                pd_df.set_index('symbol', inplace=True)
+                try:
+                    pd_df = pd.read_csv('default_investments.csv')
+                    pd_df.set_index('symbol', inplace=True)
+                except:
+                    pass
 
                 return html.Div([
                     # From Page 2 ---------------------------------------------------------------------------------------
@@ -341,33 +349,6 @@ def display_page(pathname):
         # You could also return a 404 "URL not found" page here
 
 
-
-
-
-
-
-
-
-
-# Page-1 Key inputs ----------------------------------------------------------------------------------------------
-# @app.callback(Output('output-h', 'children'),
-#               [Input('Save-Key-button', 'n_clicks')],
-#               [])
-# def page_1_inputs(save_key_count=None, email=None,radio=None):
-#     if save_key_count  :
-#
-#                 if save_key_count >= 1:
-#
-#                         print('Keyfun')
-#
-#
-#                         print(input_params_dict)
-#                         return 'Keys Received!'
-#
-#
-
-
-
 # all inputs from page 1 - third call usually-----------------------------------------------------------------------
 @app.callback(Output('text_area_1', 'value'),
               [Input('submit-button', 'n_clicks_timestamp'), Input('reset-button', 'n_clicks_timestamp')],
@@ -438,14 +419,23 @@ def page_1_inputs(save_count=None, time_frame_1=None, time_frame_2=None,
                         input_params_dict['public'] = public_key
                         input_params_dict['private'] = private_key
                         input_params_dict['take_profit'] = float(take_profit)
-
-                        input_params_dict['interval_list'] = [time_frame_1, time_frame_2, time_frame_3]
+                        input_params_dict['interval_list'][0] = time_frame_1
+                        input_params_dict['interval_list'][1] = time_frame_2
+                        input_params_dict['interval_list'][2] = time_frame_3
                         input_params_dict['sma_fast_len'] = int(sma_fast_len)
                         input_params_dict['sma_slow_len'] = int(sma_slow_len)
                         input_params_dict['variable_quote'] = variable_quote_count
-                        input_params_dict['symbol_count'] = int(symbol_count.split('-')[1])
+                        try:
+                            # incase we get Top-10
+                            input_params_dict['symbol_count'] = int(symbol_count.split('-')[1])
+                        except:
+                            # incase we get '10'
+                            input_params_dict['symbol_count'] = int(symbol_count)
+
                         with open(os.path.join(os.getcwd(), 'default.json'), 'w') as f:
                             json.dump(input_params_dict, f, indent=4)
+
+
 
                         frontend.send_pyobj(input_params_dict)
                         # Coins_ = \
