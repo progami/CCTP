@@ -15,6 +15,8 @@ from colorama import init, Fore, Back, Style
 
 init(convert=True)
 
+if not os.path.exists(os.path.join(os.getcwd(), 'logs')):
+    os.makedirs(os.path.join(os.getcwd(), 'logs'))
 
 warnings.filterwarnings("ignore")
 log_file = os.path.join(os.getcwd(), 'logs', str(time.strftime('%Y %m %d %H')) + ' activity.log')
