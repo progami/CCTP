@@ -1,17 +1,17 @@
-import smtplib
-import os
-import pandas as pd
-import time
-import logging
-from datetime import datetime
 import decimal
+import logging
+import os
+import smtplib
+import time
+import warnings
+from datetime import datetime
+import pandas as pd
 import zmq
-from coinmarketcap import Market
 from binance.client import Client
+from coinmarketcap import Market
+from colorama import init, Fore, Back, Style
 # noinspection PyUnresolvedReferences
 from sentimentAnalyse import SentimentAnalyse
-import warnings
-from colorama import init, Fore, Back, Style
 
 init(convert=True)
 
@@ -19,6 +19,7 @@ warnings.filterwarnings("ignore")
 log_file = os.path.join(os.getcwd(), 'logs', str(time.strftime('%Y %m %d %H')) + ' activity.log')
 logging.basicConfig(filename=log_file, level=logging.INFO,
                     format='%(asctime)s:%(levelname)s:%(message)s')
+
 
 # TODO: read korean jgl 101 tips
 # TODO: explain why this code is so good to client write on pad
@@ -46,6 +47,7 @@ class Coin:
         self.in_trade = False
         # 1 for automatic - 0 for semi-auto
         self.mode = mode
+        self.local_time = time.strftime("%Y-%m-%d %H:%M:%S")
 
         # binance client and sentiment class objects
         self.client = client
@@ -155,20 +157,20 @@ class Coin:
             print('{} - monitoring {}'.format(self.local_time, self.symbolPair))
 
             try:
-                self.price = float([pair['price'] for pair in self.client.get_all_tickers() if pair['symbol'] == self.symbolPair][0])
-                self.base_currency_balance = float(self.client.get_asset_balance(asset=self.base_currency_symbol)['free'])
-                self.quote_currency_balance = float(self.client.get_asset_balance(asset=self.quote_currency_symbol)['free'])
+                self.price = float(
+                    [pair['price'] for pair in self.client.get_all_tickers() if pair['symbol'] == self.symbolPair][0])
             except:
-                logging.critical('binance rate limit reached - could not retrieve quote, base, and current price balances')
+                logging.critical(
+                    'binance rate limit reached - could not retrieve quote, base, and current price balances')
                 print('binance rate limit reached')
-                self.base_currency_balance = 0.0
-                self.quote_currency_balance = 0.0
 
             logging.info('\nSymbol name: ' + str(self.symbolPair)
                          + '\ncurrent price: ' + str(self.price)
                          + '\ncurrent budget allocation: ' + str(self.investment)
-                         + '\nbase currency: ' + str(self.base_currency_symbol) + '- base currency balance: ' + str(self.base_currency_balance)
-                         + '\nquote currency: ' + str(self.quote_currency_symbol) + '- quote currency balance: ' + str(self.quote_currency_balance))
+                         + '\nbase currency: ' + str(self.base_currency_symbol) + '- base currency balance: ' + str(
+                self.base_currency_balance)
+                         + '\nquote currency: ' + str(self.quote_currency_symbol) + '- quote currency balance: ' + str(
+                self.quote_currency_balance))
 
             for idx, (interval, data_frame) in enumerate(zip(self.interval_list, self.data)):
                 # acquire latest candle from binance api, append it is a row at the end of self.data
@@ -190,8 +192,8 @@ class Coin:
                     # recalculate sma for latest candle
                     self._init_sma()
 
+            if self.in_trade is False:
 
-            if self.investment and self.in_trade is False:
                 self._get_sma_market_position()
                 self.sentiment = self.sentiment_analyse.get_sentiment()
                 self.sentiment_list.append(self.sentiment)
@@ -201,12 +203,22 @@ class Coin:
                 # change this to abs() when working with sell orders also
 
                 if self.sma_market_position and self.sentiment > 0.15:
+                    try:
+                        self.base_currency_balance = float(
+                            self.client.get_asset_balance(asset=self.base_currency_symbol)['free'])
+
+                        self.quote_currency_balance = float(
+                            self.client.get_asset_balance(asset=self.quote_currency_symbol)['free'])
+                    except:
+                        self.base_currency_balance = 0.0
+                        self.quote_currency_balance = 0.0
+
                     if self.quote_currency_balance > self.investment and self.quote_currency_balance > 0:
-                        self._exec_trade()
+                        self._buy_order()
                         self.sma_market_position = 0
                         return
 
-            if self.investment and self.in_trade:
+            if self.in_trade:
 
                 logging.info('trade was placed earlier, waiting for take profit to sell...')
                 logging.info('current market price: {} '.format(self.price))
@@ -214,44 +226,22 @@ class Coin:
                 logging.info('req to sell: {}'.format(self.exit_price))
 
                 if self.price >= round(self.exit_price, 6):
-                    print('placing sell order at market')
-                    logging.critical('placing sell order at market for {}'.format(self.symbolPair))
-                    logging.critical('base currency balance: {}'.format(self.base_currency_balance))
-                    self.sma_market_position = -1
-                    if self.mode:
+                    try:
+                        self.base_currency_balance = float(
+                            self.client.get_asset_balance(asset=self.base_currency_symbol)['free'])
 
-                        try:
-                            self.client.order_market_sell(symbol=self.symbolPair, quantity=round(self.base_currency_balance - self.min_step,
-                                                                                                 abs(self.round_factor)))
+                        self.quote_currency_balance = float(
+                            self.client.get_asset_balance(asset=self.quote_currency_symbol)['free'])
+                    except:
+                        self.base_currency_balance = 0.0
+                        self.quote_currency_balance = 0.0
 
-                            self.in_trade = False
+                    self._sell_order()
+                    self.sma_market_position = 0
+                    return
 
-                            self.gui_dict['trade'] = 'placed sell order on binance for ' + str(self.symbolPair) \
-                                                     + ' for entry price ' + str(self.entry_price) \
-                                                     + ' exit value: ' + str(self.entry_price + self.entry_price * self.take_profit)
-
-                            print(Back.WHITE + Fore.GREEN + '{} placed sell order on binance for symbol: {}\nentry price: {}\nexit price: {}\nprofit: {}'\
-                                  .format(self.local_time,
-                                  self.symbolPair,
-                                  self.entry_price,
-                                  self.exit_price,
-                                  round(self.exit_price - self.entry_price, 6)))
-                            self.__send_email_notification()
-
-                            self.entry_price = 0
-                        except Exception as e:
-                            logging.critical('sell order {}'.format(e))
-                            print(e)
-                        print(Style.RESET_ALL)
-                    else:
-                        self.__send_email_notification()
-                        self.in_trade = False
-                        self.entry_price = 0
-
-            self.gui_dict['sentiment_list'] = self.sentiment_list
             self.sma_market_position = 0
-            # self.backend.recv_pyobj()
-            # self.backend.send_pyobj(self.gui_dict)
+            return
 
     def _get_sma_market_position(self):
 
@@ -281,7 +271,7 @@ class Coin:
         else:
             self.sma_market_position = 0
 
-    def _exec_trade(self):
+    def _buy_order(self):
         # checks the sma_market_position and if it is positive or negative - places a market order for buy/sell
         # resets the market position intended at the end of the cycle
         if self.sma_market_position == 1 and self.sentiment > 0.15:
@@ -294,12 +284,14 @@ class Coin:
                     self.in_trade = True
                     self.entry_price = self.price
                     self.exit_price = round(self.entry_price + (self.entry_price * self.take_profit), 6)
-                    print(Back.WHITE + Fore.RED + '{} - placed buy order at market\nentry price: {}\nexit target: {}\ntake profit %: {}'.format(self.local_time, self.entry_price, self.exit_price, self.take_profit * 100))
+
+                    print(Back.WHITE + Fore.RED
+                    + '{} - placed buy order at market\nentry price: {}\nexit target: {}\ntake profit %: {}'
+                    .format(self.local_time, self.entry_price, self.exit_price, self.take_profit * 100))
+
                     self.__send_email_notification()
                     logging.critical('placing buy order at market for {}'.format(self.symbolPair))
 
-                    self.gui_dict['trade'] = 'placed buy order on ' + str(self.symbolPair) + ' at entry price ' + str(
-                        self.entry_price)
                 except Exception as e:
                     logging.critical('buy order: {}'.format(e))
                     print(e)
@@ -307,10 +299,45 @@ class Coin:
                 self.__send_email_notification()
                 self.in_trade = True
                 self.entry_price = self.price
-                self.gui_dict['trade'] = 'detected buy order on ' + str(self.symbolPair) + ' at entry price ' + str(
-                    self.entry_price)
 
         print(Style.RESET_ALL)
+
+    def _sell_order(self):
+
+        print('placing sell order at market')
+        logging.critical('placing sell order at market for {}'.format(self.symbolPair))
+        logging.critical('base currency balance: {}'.format(self.base_currency_balance))
+        self.sma_market_position = -1
+        if self.mode:
+
+            try:
+                self.client.order_market_sell(symbol=self.symbolPair,
+                                              quantity=round(self.base_currency_balance - self.min_step,
+                                                             abs(self.round_factor)))
+
+                self.in_trade = False
+
+                print(
+                    '{}{}{} placed sell order on binance for symbol: {}\nentry price: {}\nexit price: {}\nprofit: {}'
+                    .format(Back.WHITE,
+                            Fore.GREEN,
+                            self.local_time,
+                            self.symbolPair,
+                            self.entry_price,
+                            self.exit_price,
+                            round(self.exit_price - self.entry_price, 6)))
+
+                self.__send_email_notification()
+                self.entry_price = 0
+
+            except Exception as e:
+                logging.critical('sell order {}'.format(e))
+                print(e)
+            print(Style.RESET_ALL)
+        else:
+            self.__send_email_notification()
+            self.in_trade = False
+            self.entry_price = 0
 
     def __calculate_qty(self):
         self.quantity = round(self.investment / self.price, self.round_factor)
@@ -319,12 +346,13 @@ class Coin:
     def __send_email_notification(self, special_message=''):
         try:
             if not special_message:
-                email_text = 'Placed order on binance \n' \
+                email_text = str(self.local_time)\
+                             + 'Placed order on binance \n' \
                              + 'Symbol: ' + str(self.symbolPair) + '\n' \
                              + 'market position ( 1 = Buy, -1 = Sell): ' + str(self.sma_market_position) + '\n' \
                              + 'Quantity: ' + str(self.quantity) + '\n' \
                              + 'Entry price: ' + str(self.entry_price) + '\n' \
-                             + 'Exit price: ' + str(self.exit_price) + '\n'\
+                             + 'Exit price: ' + str(self.exit_price) + '\n' \
                              + 'Investment: ' + str(self.investment) + '\n' \
                              + 'market sentiment: ' + str(self.sentiment)
             else:
@@ -424,7 +452,8 @@ class CCTP:
             print(Style.RESET_ALL)
 
         print('getting historical data from binance for technical analysis... (one time loading) (apox 100 seconds)')
-        logging.info('getting historical data from binance for technical analysis... (one time loading) (apox 100 seconds)')
+        logging.info(
+            'getting historical data from binance for technical analysis... (one time loading) (apox 100 seconds)')
         for symbol, row in self.init_dataframe.iterrows():
             logging.info(str(symbol))
             try:
@@ -450,11 +479,11 @@ class CCTP:
 
             for coin_object in self.coin_list:
                 coin_object.monitor()
-                
+
             end_time = time.time() - start_time
             print('\n')
             time.sleep(max(0, 60 - end_time))
-            
+
     def _get_binance_data(self):
 
         self.init_dataframe = pd.DataFrame(self.binance_client.get_ticker(), columns=['symbol', 'quoteVolume'])
