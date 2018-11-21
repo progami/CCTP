@@ -88,11 +88,12 @@ def display_page(pathname):
 
         if pathname == '/page-1':
 
-            if binance_status_flag == True:
+            if binance_status_flag:
                 frontend.send_pyobj('')
                 pd_df = frontend.recv_pyobj()
 
-
+                pd_df = pd.read_csv('default_investments.csv')
+                pd_df.set_index('symbol', inplace=True)
 
                 return html.Div([
                     # From Page 2 ---------------------------------------------------------------------------------------
@@ -467,6 +468,7 @@ def final_call(clicks):
     if clicks == 1:
         frontend.send_pyobj(pd_df)
         frontend.recv_pyobj()
+        pd_df.to_csv('default_investments.csv')
         return 'Settings saved, you may proceed to command prompt window to monitor your trade activity.'
     elif clicks > 1:
         return 'Orders Already Submitted'
