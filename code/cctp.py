@@ -119,6 +119,7 @@ class Coin:
                 update: it will work on the biggest interval from the interval list - because giving the time of biggest
                 interval will always make sure, it works with the smaller time frames
             """
+
         day_time_minutes = 1440
         day_count = 1
         minutes_required = 1

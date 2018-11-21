@@ -1,6 +1,6 @@
 import os
 import json
-from pprint import pprint
+from pprint import pprint, pformat
 import zmq
 import dash
 import dash_core_components as dcc
@@ -375,7 +375,6 @@ def clear_page_1_coins_investment(submit_time=None, reset_time=None, coin=None, 
     global pd_df
     if submit_time:
 
-
         if reset_time > submit_time:
 
             pd_df.investment = 0
@@ -386,7 +385,7 @@ def clear_page_1_coins_investment(submit_time=None, reset_time=None, coin=None, 
 
             pd_dict = temp_pd_df.to_dict('index')
 
-            return pprint.pformat(pd_dict, indent=1).replace('{','').replace('}','').replace("'","").replace(',','')
+            return pformat(pd_dict, indent=1).replace('{','').replace('}','').replace("'","").replace(',','')
 
         else:
             amount = float(amount)
@@ -398,13 +397,11 @@ def clear_page_1_coins_investment(submit_time=None, reset_time=None, coin=None, 
 
                     pd_dict = temp_pd_df.to_dict('index')
 
-                    string = ''
-
-                    return pprint.pformat(pd_dict, indent=1).replace('{','').replace('}','').replace("'","").replace(',','')
+                    return pformat(pd_dict, indent=1).replace('{','').replace('}','').replace("'","").replace(',','')
                 else:
-                    return 'Not enough quote asset balance for '+ str(coin)
+                    return 'Not enough quote asset balance for ' + str(coin)
             else:
-                return str(coin)+' investment amount must be greater than ' + str(int(pd_df.loc[coin, 'min_investment'] +(pd_df.loc[coin, 'min_investment']/3)))
+                return str(coin)+' investment amount must be greater than ' + str(int(pd_df.loc[coin, 'min_investment'] + (pd_df.loc[coin, 'min_investment']/3)))
 
 
 @app.callback(Output('output-g', 'children'),
@@ -447,95 +444,21 @@ def page_1_inputs(save_count=None, time_frame_1=None, time_frame_2=None,
                         input_params_dict['variable_quote'] = variable_quote_count
                         input_params_dict['symbol_count'] = int(symbol_count.split('-')[1])
                         with open(os.path.join(os.getcwd(), 'default.json'), 'w') as f:
-                            json.dump(input_params_dict, f)
+                            json.dump(input_params_dict, f, indent=4)
 
                         frontend.send_pyobj(input_params_dict)
                         # Coins_ = \
                         if frontend.recv_pyobj() == 1:
                             binance_status_flag = False
-                            return 'Binance Closed For Maintanence !'
-                        # print(Coins_)
+                            return 'Binance Closed For maintenance !'
 
                         return 'Data Saved ! You may proceed to Investments Page. '
                     return 'SMA slow Must be Greater than SMA fast !'
-                return 'Choose Trading Space Mode'
+                return 'Choose Trading Mode'
             return 'Enter a valid Email !'
         return 'Invalid Keys !'
-    return 'Some Boxes are Not Filled !'
-# button click response - second call
+    return 'Some inputs may be empty'
 
-# @app.callback(Output('text_area', 'value'),
-#               [Input('interval-component', 'n_intervals'),
-#                Input('url', 'pathname')]
-#                 ,[State('my-dropdown','value')])
-# def auto_recommend_local(inp=None, pathname=None,coin_=None):
-#     global global_trade
-#     global sentiment_List
-#     if inp and coin_ :
-#         print('globalfun')
-#         if flag == 1:
-#             print('e-', datetime.now().strftime("%H:%M:%S.%f"))
-#             try:
-#                 frontend.send_pyobj('')
-#                 D = frontend.recv_pyobj(zmq.DONTWAIT)
-#             except:
-#                 return ''
-#             print(D)
-#             pprint.pprint(D)
-#
-#             if 'trade' in D:
-#                 global_trade = str(D['trade']) +'\n' + global_trade
-#
-#             temp_string = D['general'].split('\n')[1]
-#
-#             global_List = D['sentiment_list']
-#
-#             line = str(D['general'])
-#             if temp_string[13:] == coin_:
-#                 if 'data1' in D:
-#                     line = line+ '\n'+ 'Sma-1 Status : ' +str(D['data1'])
-#                 if 'data2' in D:
-#                     line = line+ '\n'+ 'Sma-1 Status : ' +str(D['data2'])
-#                 if 'data3' in D:
-#                     line = line+ '\n'+ 'Sma-1 Status : ' +str(D['data3'])
-#
-#                 return str(line)
-#
-#                 # global_general = line + '\n\n' + global_general
-#
-#
-#
-# @app.callback(Output('text_area_2', 'value'),
-#               [Input('interval-component_2', 'n_intervals'),
-#               Input('url', 'pathname')]
-#                 , [State('my-dropdown', 'value')])
-# def auto_recommend_global(inp=None, pathname=None,coin_=None):
-#     global global_trade
-#     print('v')
-#     if inp and coin_:
-#         if flag == 1:
-#             print('inside')
-#             return str(global_trade)
-
-
-# @app.callback(Output('my-graph', 'figure'),
-#               [Input('interval-component', 'n_intervals'),
-#               Input('url', 'pathname')]
-#                 , [State('my-dropdown', 'value')])
-# def auto_recommend_global(inp=None,pathname=None,coin_=None):
-#     global sentiment_List
-#     time.sleep(4)
-#     print('t')
-#     if inp and coin_:
-#         if flag == 1:
-#
-#             fig = {
-#                 'data':[
-#                     {'x':list(range(len(sentiment_List))),'y':sentiment_List,'type':'line','name':'sentiment'}
-#                 ]
-#             }
-#             print('end')
-#             return fig
 
 @app.callback(Output('final-text','children'),
               [Input('submit-all-button','n_clicks')])
@@ -544,7 +467,7 @@ def final_call(clicks):
     if clicks == 1:
         frontend.send_pyobj(pd_df)
         frontend.recv_pyobj()
-        return 'Orders Submitted ! You may proceed to Command Prompt.'
+        return 'Settings saved, you may proceed to command prompt window to monitor your trade activity.'
     elif clicks > 1:
         return 'Orders Already Submitted'
 
