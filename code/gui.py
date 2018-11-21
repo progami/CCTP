@@ -9,6 +9,9 @@ from dash.dependencies import Input, State, Output
 import pandas as pd
 import time
 
+if not os.path.exists(os.path.join(os.getcwd(), 'logs')):
+    os.makedirs(os.path.join(os.getcwd(), 'logs'))
+
 print(dcc.__version__)  # 0.6.0 or above is required
 app = dash.Dash(__name__)
 app.config.suppress_callback_exceptions = True
