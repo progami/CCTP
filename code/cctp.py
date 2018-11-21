@@ -1,4 +1,5 @@
 import smtplib
+import os
 import pandas as pd
 import time
 import logging
@@ -16,17 +17,13 @@ init(convert=True)
 
 
 warnings.filterwarnings("ignore")
-log_file = str(time.strftime('%Y %m %d %H')) + ' activity.log'
+log_file = os.path.join(os.getcwd(), 'logs', str(time.strftime('%Y %m %d %H')) + ' activity.log')
 logging.basicConfig(filename=log_file, level=logging.INFO,
                     format='%(asctime)s:%(levelname)s:%(message)s')
 
-
 # TODO: read korean jgl 101 tips
 # TODO: explain why this code is so good to client write on pad
-
 # TODO: binance.products()
-
-
 
 class Coin:
     def __init__(self, symbol, mode, take_profit,

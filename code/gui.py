@@ -25,20 +25,14 @@ context = zmq.Context()
 frontend = context.socket(zmq.REQ)
 frontend.connect('tcp://localhost:17000')
 
-# PAGE1_INVESTMENT_PATH = os.path.join('com', 'page1_investments_data.json')
-# PAGE1_INPUTS_PATH = os.path.join('com', 'page1_inputs.txt')
-
-# with open(PAGE1_INVESTMENT_PATH, 'w') as f:
-#     pass
-#
-# with open(PAGE1_INPUTS_PATH, 'w') as f:
-#     pass
+PAGE1_DEFAULT_PATH = os.path.join(os.getcwd(), 'logs', 'default.json')
+PAGE2_DEFAULT_PATH = os.path.join(os.getcwd(), 'logs', 'default_investments.csv')
 
 flag = 0
 # inputs from GUI
 input_params_dict = dict()
-if os.path.isfile('default.json'):
-    with open(os.path.join(os.getcwd(), 'default.json'), 'r') as f:
+if os.path.isfile(PAGE1_DEFAULT_PATH):
+    with open(PAGE1_DEFAULT_PATH, 'r') as f:
         input_params_dict = json.load(f)
 else:
     input_params_dict['mode'] = int()
@@ -52,7 +46,7 @@ else:
     input_params_dict['variable_quote'] = str()
     input_params_dict['symbol_count'] = str()
 
-    with open(os.path.join(os.getcwd(), 'default.json'), 'w') as f:
+    with open(PAGE1_DEFAULT_PATH, 'w') as f:
         json.dump(input_params_dict, f, indent=4)
 
 investment_dict = dict()
@@ -98,7 +92,7 @@ def display_page(pathname):
                 frontend.send_pyobj('')
                 pd_df = frontend.recv_pyobj()
                 try:
-                    pd_df = pd.read_csv('default_investments.csv')
+                    pd_df = pd.read_csv(PAGE2_DEFAULT_PATH)
                     pd_df.set_index('symbol', inplace=True)
                 except:
                     pass
@@ -432,7 +426,7 @@ def page_1_inputs(save_count=None, time_frame_1=None, time_frame_2=None,
                             # incase we get '10'
                             input_params_dict['symbol_count'] = int(symbol_count)
 
-                        with open(os.path.join(os.getcwd(), 'default.json'), 'w') as f:
+                        with open(PAGE1_DEFAULT_PATH, 'w') as f:
                             json.dump(input_params_dict, f, indent=4)
 
 
@@ -458,7 +452,7 @@ def final_call(clicks):
     if clicks == 1:
         frontend.send_pyobj(pd_df)
         frontend.recv_pyobj()
-        pd_df.to_csv('default_investments.csv')
+        pd_df.to_csv(PAGE2_DEFAULT_PATH)
         return 'Settings saved, you may proceed to command prompt window to monitor your trade activity.'
     elif clicks > 1:
         return 'Orders Already Submitted'
