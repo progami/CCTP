@@ -1,0 +1,11 @@
+nltk
+gnewsclient
+feedparser
+pyzmq
+colorama
+coinmarketcap
+binance
+pandas
+dash
+dash_html_components
+dash_core_components
