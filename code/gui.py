@@ -61,15 +61,6 @@ pd_df = pd.DataFrame()
 sentiment_List = []
 global_trade = ''
 
-
-# DF_SIMPLE = {
-#     'x': ['A', 'B', 'C', 'D', 'E', 'F'],
-#     'y': [4, 3, 1, 2, 3, 6],
-#     'z': ['a', 'b', 'c', 'a', 'b', 'c']
-# }
-
-
-
 app.layout = html.Div([
     # represents the URL bar, doesn't render anything
     dcc.Location(id='url', refresh=False),
@@ -95,8 +86,15 @@ def display_page(pathname):
                 frontend.send_pyobj('')
                 pd_df = frontend.recv_pyobj()
                 try:
-                    pd_df = pd.read_csv(PAGE2_DEFAULT_PATH)
-                    pd_df.set_index('symbol', inplace=True)
+                    prev_df = pd.read_csv(PAGE2_DEFAULT_PATH)
+                    prev_df.set_index('symbol', inplace=True)
+                    prev_filtered = prev_df[prev_df['name'].isin(pd_df['name'])]
+                    new_filtered = pd_df[~pd_df['name'].isin(prev_df['name'])]
+                    print("Pick those entries (name column) from the previously saved df which are in the new df")
+                    print(prev_filtered)
+                    print("Pick those entries (name column) from the new df which are not present in the old df")
+                    print(new_filtered)
+                    pd_df = pd.concat([prev_filtered, new_filtered])
                 except:
                     pass
 
@@ -203,11 +201,11 @@ def display_page(pathname):
                 html.Div([
                     html.Div([
 
-                        html.H3('Enter Email:', className='two columns'),
-                        html.H3(className='two columns'),
-                        html.H3('Enter Public Key:', className='two columns'),
-                        html.H3(className='two columns'),
-                        html.H3('Enter Private Key:', className='two columns'),
+                        html.H4('Enter Email:', className='two columns'),
+                        html.H4(className='two columns'),
+                        html.H4('Enter Public Key:', className='two columns'),
+                        html.H4(className='two columns'),
+                        html.H4('Enter Private Key:', className='two columns'),
 
                     ],
                         className='ten columns offset-by-two'
@@ -352,6 +350,7 @@ def display_page(pathname):
               [State('coin-dropdown', 'value'), State('coin_invest', 'value')])
 def clear_page_1_coins_investment(submit_time=None, reset_time=None, coin=None, amount=None):
     global pd_df
+
     if submit_time:
 
         if reset_time > submit_time:
