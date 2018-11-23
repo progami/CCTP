@@ -215,9 +215,9 @@ def display_page(pathname):
                 html.Div([
                     html.Div([
                         dcc.Input(id='Email', value=input_params_dict['email'], type='text', className="two columns"),
-                        html.H3(className='two columns'),
+                        html.H4(className='two columns'),
                         dcc.Input(id='Public-Key', value=input_params_dict['public'], type='text', className="two columns"),
-                        html.H3(className='two columns'),
+                        html.H4(className='two columns'),
                         dcc.Input(id='Private-Key', value=input_params_dict['private'], type='text', className="two columns"),
                     ],
                         className='ten columns offset-by-two'
@@ -227,13 +227,13 @@ def display_page(pathname):
                 html.Br(),
 
 
-                html.Div([html.H3(id='output-h', style={'text-align': 'center'}),
+                html.Div([html.H4(id='output-h', style={'text-align': 'center'}),
                           ], className="row"),
 
-                html.Div([html.H3('Select 3 Time Frames:', style={'text-align': 'center'}),
+                html.Div([html.H4('Select 3 Time Frames:', style={'text-align': 'center'}),
                           ], className="row"),
 
-                html.Div([html.H3(className="one column"),
+                html.Div([html.H4(className="one column"),
 
                           dcc.Dropdown(id='time-frame-1',
                                        value=input_params_dict['interval_list'][0],
@@ -244,7 +244,7 @@ def display_page(pathname):
 
                                        ),
 
-                          html.H3(className="one column"),
+                          html.H4(className="one column"),
                           dcc.Dropdown(id='time-frame-2',
                                        value=input_params_dict['interval_list'][1],
                                        options=[
@@ -254,7 +254,7 @@ def display_page(pathname):
 
                                        ),
 
-                          html.H3(className="one column"),
+                          html.H4(className="one column"),
                           dcc.Dropdown(id='time-frame-3',
                                        value=input_params_dict['interval_list'][2],
                                        options=[
@@ -267,11 +267,11 @@ def display_page(pathname):
 
                 html.Div([
                     html.Div([
-                        html.H3('Enter SMA-Fast Length:', className='two columns'),
-                        html.H3(className='two columns'),
-                        html.H3('Enter SMA-Slow Length:', className='two columns'),
-                        html.H3(className='two columns'),
-                        html.H3('Enter Take-Profit:', className='two columns'),
+                        html.H4('Enter SMA-Fast Length:', className='two columns'),
+                        html.H4(className='two columns'),
+                        html.H4('Enter SMA-Slow Length:', className='two columns'),
+                        html.H4(className='two columns'),
+                        html.H4('Enter Take-Profit:', className='two columns'),
 
                     ],
                         className='ten columns offset-by-two'
@@ -281,9 +281,9 @@ def display_page(pathname):
                 html.Div([
                     html.Div([
                         dcc.Input(id='SMA-Fast', value=input_params_dict['sma_fast_len'], type='text', className="two columns"),
-                        html.H3(className='two columns'),
+                        html.H4(className='two columns'),
                         dcc.Input(id='SMA-Slow', value=input_params_dict['sma_slow_len'], type='text', className="two columns"),
-                        html.H3(className='two columns'),
+                        html.H4(className='two columns'),
                         dcc.Input(id='take-profit', value=input_params_dict['take_profit'], type='text', className="two columns"),
                     ],
                         className='ten columns offset-by-two'
@@ -292,10 +292,10 @@ def display_page(pathname):
 
                 html.Br(),
 
-                html.Div([html.H3('Select Variable Quote Currency :', style={'text-align': 'center'}),
+                html.Div([html.H4('Select Variable Quote Currency :', style={'text-align': 'center'}),
                           ], className="row"),
 
-                html.Div([html.H3(className="two columns"),
+                html.Div([html.H4(className="two columns"),
 
                           dcc.Dropdown(id='Variable-Quote-Count',
                                        value=input_params_dict['variable_quote'],
@@ -307,10 +307,10 @@ def display_page(pathname):
 
                           ], className="row"),
 
-                html.Div([html.H3('Select No. of Coins:', style={'text-align': 'center'}),
+                html.Div([html.H4('Select No. of Coins:', style={'text-align': 'center'}),
                           ], className="row"),
 
-                html.Div([html.H3(className="two columns"),
+                html.Div([html.H4(className="two columns"),
 
                           dcc.Dropdown(id='Coin-Count',
                                        value='Top-10',
@@ -325,7 +325,7 @@ def display_page(pathname):
                 html.Br(),
 
                 html.Div([
-                    html.H3(className='five columns'),
+                    html.H4(className='five columns'),
                     html.Button(id='Save-Data-button', n_clicks=0, children='Save Data', className="three columns"),
                 ], className="row"),
 
@@ -367,19 +367,19 @@ def clear_page_1_coins_investment(submit_time=None, reset_time=None, coin=None, 
 
         else:
             amount = float(amount)
-            if amount > int(pd_df.loc[coin, 'min_investment'] +(pd_df.loc[coin, 'min_investment']/3)):
-                if  pd_df.loc[coin, 'quote_asset_balance'] > amount:
+            if amount > round(float(pd_df.loc[coin, 'min_investment']*1.005), 2):
+                if pd_df.loc[coin, 'quote_asset_balance'] > amount:
                     pd_df.loc[coin, 'investment'] = amount
 
                     temp_pd_df = pd_df.drop(['min_qty', 'min_step'], axis=1)
 
                     pd_dict = temp_pd_df.to_dict('index')
 
-                    return pformat(pd_dict, indent=1).replace('{','').replace('}','').replace("'","").replace(',','')
+                    return pformat(pd_dict, indent=1).replace('{', '').replace('}', '').replace("'", "").replace(',', '')
                 else:
                     return 'Not enough quote asset balance for ' + str(coin)
             else:
-                return str(coin)+' investment amount must be greater than ' + str(int(pd_df.loc[coin, 'min_investment'] + (pd_df.loc[coin, 'min_investment']/3)))
+                return str(coin)+' investment amount must be greater than ' + str(round(float(pd_df.loc[coin, 'min_investment']*1.005), 2))
 
 
 @app.callback(Output('output-g', 'children'),
@@ -397,14 +397,15 @@ def clear_page_1_coins_investment(submit_time=None, reset_time=None, coin=None, 
                State('radio','value'),
                State('take-profit', 'value')
                ])
-def page_1_inputs(save_count=None, time_frame_1=None, time_frame_2=None,
+def page_1_inputs(n_clicks=None, time_frame_1=None, time_frame_2=None,
                   time_frame_3=None, sma_fast_len=None, sma_slow_len=None,
                   variable_quote_count=None, symbol_count=None,
-                  public_key=None,private_key=None,email=None,radio=None,take_profit=None):
+                  public_key=None, private_key=None, email=None, radio=None, take_profit=None):
     global Coins_
-    if save_count and time_frame_1 and time_frame_2 and time_frame_3 and \
+
+    if n_clicks and time_frame_1 and time_frame_2 and time_frame_3 and \
             sma_fast_len and sma_slow_len and variable_quote_count and symbol_count \
-            and public_key and private_key and take_profit :
+            and public_key and private_key and take_profit:
         if len(public_key) >= 64 and len(private_key) >= 64:
             if email and email[-4:] == '.com' and email.find('@') != -1:
                 if radio == 1 or radio == 0:
@@ -422,33 +423,30 @@ def page_1_inputs(save_count=None, time_frame_1=None, time_frame_2=None,
                         input_params_dict['sma_slow_len'] = int(sma_slow_len)
                         input_params_dict['variable_quote'] = variable_quote_count
                         try:
-                            # incase we get Top-10
+                            # in case we get Top-10
                             input_params_dict['symbol_count'] = int(symbol_count.split('-')[1])
                         except:
-                            # incase we get '10'
+                            # in case we get '10'
                             input_params_dict['symbol_count'] = int(symbol_count)
 
                         with open(PAGE1_DEFAULT_PATH, 'w') as f:
                             json.dump(input_params_dict, f, indent=4)
 
-
-
                         frontend.send_pyobj(input_params_dict)
-                        # Coins_ = \
                         if frontend.recv_pyobj() == 1:
-                            binance_status_flag = False
                             return 'Binance Closed For maintenance !'
-
                         return 'Data Saved ! You may proceed to Investments Page. '
                     return 'SMA slow Must be Greater than SMA fast !'
                 return 'Choose Trading Mode'
             return 'Enter a valid Email !'
         return 'Invalid Keys !'
-    return 'Some inputs may be empty'
+    else:
+        if n_clicks:
+            return 'Some inputs are empty'
 
 
 @app.callback(Output('final-text','children'),
-              [Input('submit-all-button','n_clicks')])
+              [Input('submit-all-button', 'n_clicks')])
 def final_call(clicks):
 
     if clicks == 1:
